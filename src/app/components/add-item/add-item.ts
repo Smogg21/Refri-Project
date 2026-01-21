@@ -15,7 +15,7 @@ export class AddItemComponent {
   private foodService = inject(FoodService);
   private router = inject(Router);
 
-  categories = ['Vegetables', 'Fruits', 'Dairy', 'Meat', 'Beverages', 'Sauces', 'Snacks', 'Grains', 'Other'];
+  categories = ['Vegetales', 'Frutas', 'Lácteos', 'Carne', 'Bebidas', 'Salsas', 'Snacks', 'Granos', 'Otros'];
   locations = ['fridge', 'pantry'];
 
   form = this.fb.group({

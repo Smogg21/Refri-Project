@@ -15,7 +15,7 @@ export class FoodService {
   readonly expiringSoon = computed(() => {
     const now = new Date();
     const threeDaysFromNow = new Date();
-    threeDaysFromNow.setDate(now.getDate() + 3);
+    threeDaysFromNow.setDate(now.getDate() + 7);
 
     return this.itemsSignal().filter(item =>
       item.expirationDate &&
@@ -41,18 +41,36 @@ export class FoodService {
     });
   }
 
+  private checkExpiration(date: Date): boolean {
+    const now = new Date();
+    // Create UTC midnight date for comparison to match input format logic
+    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    return date < todayUTC;
+  }
+
   private loadItems(): FoodItem[] {
     const stored = localStorage.getItem(this.STORAGE_KEY);
     if (!stored) return [];
 
     try {
       const parsed = JSON.parse(stored);
-      // Restore date objects
-      return parsed.map((item: any) => ({
-        ...item,
-        expirationDate: item.expirationDate ? new Date(item.expirationDate) : null,
-        addedDate: new Date(item.addedDate)
-      }));
+      // Restore date objects and check expiration
+      return parsed.map((item: any) => {
+        const expirationDate = item.expirationDate ? new Date(item.expirationDate) : null;
+        let status = item.status;
+
+        // Auto-expire items if needed
+        if (status === 'fresh' && expirationDate && this.checkExpiration(expirationDate)) {
+          status = 'expired';
+        }
+
+        return {
+          ...item,
+          expirationDate,
+          addedDate: new Date(item.addedDate),
+          status
+        };
+      });
     } catch (e) {
       console.error('Failed to parse items', e);
       return [];
@@ -64,11 +82,13 @@ export class FoodService {
   }
 
   addItem(item: Omit<FoodItem, 'id' | 'addedDate' | 'status'>) {
+    const isExpired = item.expirationDate && this.checkExpiration(item.expirationDate);
+
     const newItem: FoodItem = {
       ...item,
       id: crypto.randomUUID(),
       addedDate: new Date(),
-      status: 'fresh'
+      status: isExpired ? 'expired' : 'fresh'
     };
 
     this.itemsSignal.update(items => [...items, newItem]);

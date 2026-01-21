@@ -3,7 +3,7 @@
     <a routerLink="/dashboard" class="btn btn-circle btn-ghost">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
     </a>
-    <h1 class="text-3xl font-bold">Add New Item</h1>
+    <h1 class="text-3xl font-bold">Agregar Nuevo Producto</h1>
   </div>
 
   <div class="card bg-base-100 shadow-xl">
@@ -12,13 +12,13 @@
       <!-- Name -->
       <div class="form-control w-full">
         <label class="label">
-          <span class="label-text">Item Name</span>
+          <span class="label-text">Nombre del Producto</span>
         </label>
-        <input type="text" formControlName="name" placeholder="e.g. Milk, Carrots" class="input input-bordered w-full"
+        <input type="text" formControlName="name" placeholder="ej. Leche, Zanahorias" class="input input-bordered w-full"
                [class.input-error]="form.get('name')?.invalid && form.get('name')?.touched" />
         @if (form.get('name')?.invalid && form.get('name')?.touched) {
         <label class="label">
-          <span class="label-text-alt text-error">Name is required</span>
+          <span class="label-text-alt text-error">El nombre es obligatorio</span>
         </label>
         }
       </div>
@@ -27,11 +27,11 @@
         <!-- Category -->
         <div class="form-control w-full">
           <label class="label">
-            <span class="label-text">Category</span>
+            <span class="label-text">Categoría</span>
           </label>
           <select formControlName="category" class="select select-bordered w-full"
                   [class.select-error]="form.get('category')?.invalid && form.get('category')?.touched">
-            <option value="" disabled selected>Select category</option>
+            <option value="" disabled selected>Selecciona una categoría</option>
             @for (cat of categories; track cat) {
             <option [value]="cat">{{ cat }}</option>
             }
@@ -41,11 +41,11 @@
         <!-- Location -->
         <div class="form-control w-full">
           <label class="label">
-            <span class="label-text">Location</span>
+            <span class="label-text">Ubicación</span>
           </label>
           <select formControlName="location" class="select select-bordered w-full">
             @for (loc of locations; track loc) {
-            <option [value]="loc">{{ loc | titlecase }}</option>
+            <option [value]="loc">{{ loc === 'fridge' ? 'Nevera' : 'Despensa' }}</option>
             }
           </select>
         </div>
@@ -54,7 +54,7 @@
       <!-- Quantity -->
        <div class="form-control w-full">
           <label class="label">
-            <span class="label-text">Quantity</span>
+            <span class="label-text">Cantidad</span>
           </label>
           <input type="number" formControlName="quantity" class="input input-bordered w-full" />
         </div>
@@ -62,14 +62,14 @@
       <!-- Expiration Date -->
       <div class="form-control w-full">
         <label class="label">
-          <span class="label-text">Expiration Date</span>
+          <span class="label-text">Fecha de Vencimiento</span>
         </label>
         <input type="date" formControlName="expirationDate" class="input input-bordered w-full" />
       </div>
 
       <div class="card-actions justify-end mt-6">
         <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
-          Add Item
+          Agregar Producto
         </button>
       </div>
     </form>

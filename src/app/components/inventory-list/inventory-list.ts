@@ -1,12 +1,12 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FoodService } from '../../services/food.service';
 import { FoodItem } from '../../models/food-item.model';
 
 @Component({
   selector: 'app-inventory-list',
-  imports: [CommonModule, FormsModule, DatePipe, TitleCasePipe],
+  imports: [CommonModule, FormsModule, DatePipe],
   templateUrl: './inventory-list.html',
   styleUrl: './inventory-list.css'
 })
@@ -16,7 +16,7 @@ export class InventoryListComponent {
   filterCategory = signal('');
   filterLocation = signal('');
 
-  categories = ['Vegetables', 'Fruits', 'Dairy', 'Meat', 'Beverages', 'Sauces', 'Snacks', 'Grains', 'Other'];
+  categories = ['Vegetales', 'Frutas', 'Lácteos', 'Carne', 'Bebidas', 'Salsas', 'Snacks', 'Granos', 'Otros'];
   locations = ['fridge', 'pantry'];
 
   filteredItems = computed(() => {
@@ -40,7 +40,7 @@ export class InventoryListComponent {
   });
 
   deleteItem(id: string) {
-    if(confirm('Are you sure used want to delete this item?')) {
+    if(confirm('¿Estás seguro de que deseas eliminar este producto?')) {
         this.foodService.deleteItem(id);
     }
   }
