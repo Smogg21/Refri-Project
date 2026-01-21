@@ -1,0 +1,96 @@
+<div class="p-4 space-y-6">
+  <div class="flex justify-between items-center">
+    <h1 class="text-3xl font-bold">Dashboard</h1>
+    <a routerLink="/add" class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+      Add Item
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats shadow w-full stats-vertical lg:stats-horizontal">
+    <div class="stat">
+      <div class="stat-figure text-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+      </div>
+      <div class="stat-title">Total Items</div>
+      <div class="stat-value text-primary">{{ stats().total }}</div>
+      <div class="stat-desc">In fridge and pantry</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-figure text-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+      </div>
+      <div class="stat-title">Expiring Soon</div>
+      <div class="stat-value text-secondary">{{ expiringSoon().length }}</div>
+      <div class="stat-desc">In next 3 days</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-figure text-accent">
+         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+      </div>
+      <div class="stat-title">Expired</div>
+      <div class="stat-value text-accent">{{ stats().expired }}</div>
+      <div class="stat-desc">Need attention</div>
+    </div>
+  </div>
+
+  <!-- Expiring Soon List -->
+  @if (expiringSoon().length > 0) {
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        Expiring Soon!
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Location</th>
+              <th>Expires</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of expiringSoon(); track item.id) {
+            <tr>
+              <td>
+                <div class="font-bold">{{ item.name }}</div>
+                <div class="text-sm opacity-50">{{ item.category }}</div>
+              </td>
+              <td>
+                <div class="badge badge-ghost">{{ item.location | titlecase }}</div>
+              </td>
+              <td class="text-error font-bold">
+                {{ item.expirationDate | date:'mediumDate' }}
+              </td>
+              <td>
+                <button class="btn btn-xs btn-success" (click)="foodService.updateStatus(item.id, 'consumed')">Consumed</button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  }
+
+  @if (stats().total === 0) {
+  <div class="text-center">
+    <div class="hero bg-base-200 rounded-box p-10">
+      <div class="hero-content text-center">
+        <div class="max-w-md">
+          <h1 class="text-5xl font-bold">Hello!</h1>
+          <p class="py-6">Your inventory is empty. Start by adding some items to your fridge or pantry.</p>
+          <a routerLink="/add" class="btn btn-primary">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>

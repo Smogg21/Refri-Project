@@ -1,0 +1,76 @@
+<div class="space-y-6">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <h1 class="text-3xl font-bold">Inventory</h1>
+
+    <div class="flex gap-2">
+      <select class="select select-bordered w-full max-w-xs" [ngModel]="filterCategory()" (ngModelChange)="filterCategory.set($event)">
+        <option value="">All Categories</option>
+        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+      </select>
+
+      <select class="select select-bordered w-full max-w-xs" [ngModel]="filterLocation()" (ngModelChange)="filterLocation.set($event)">
+        <option value="">All Locations</option>
+        <option *ngFor="let loc of locations" [value]="loc">{{ loc | titlecase }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto bg-base-100 shadow-xl rounded-box">
+    <table class="table w-full">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Name</th>
+          <th>Location</th>
+          <th>Category</th>
+          <th>Expires</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of filteredItems(); track item.id) {
+        <tr [class.opacity-50]="item.status !== 'fresh'">
+          <td>
+             <div class="badge" [ngClass]="{
+               'badge-success': item.status === 'fresh',
+               'badge-warning': item.status === 'consumed',
+               'badge-error': item.status === 'expired'
+             }">{{ item.status }}</div>
+          </td>
+          <td>
+            <div class="font-bold">{{ item.name }}</div>
+            <div class="text-xs">Qty: {{ item.quantity }}</div>
+          </td>
+          <td>{{ item.location | titlecase }}</td>
+          <td>{{ item.category }}</td>
+          <td>
+            @if (item.expirationDate) {
+               {{ item.expirationDate | date:'mediumDate' }}
+            } @else {
+              <span class="text-base-content/30">--</span>
+            }
+          </td>
+          <td class="text-right space-x-2">
+             @if (item.status === 'fresh') {
+             <button class="btn btn-xs btn-success btn-outline"
+                     (click)="markAsConsumed(item.id)"
+                     title="Mark as Consumed">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+             </button>
+             }
+             <button class="btn btn-xs btn-error btn-ghost" (click)="deleteItem(item.id)" title="Delete">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+             </button>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="6" class="text-center py-8 text-base-content/50">
+            No items found matching your filters.
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
