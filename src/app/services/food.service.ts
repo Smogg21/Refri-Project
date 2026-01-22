@@ -153,10 +153,8 @@ export class FoodService {
     if (updates.status) supabaseUpdates.status = updates.status;
     if (updates.quantity !== undefined) supabaseUpdates.quantity = updates.quantity;
 
-    // Logic to determine status if date changes
-    if (updates.expirationDate !== undefined && (!updates.status || updates.status === 'fresh' || updates.status === 'expiring' || updates.status === 'expired')) {
-       // Only recalculate if we have a date. If null, default to fresh or keep existing?
-       // If clearing date, assume fresh or user intent.
+    // Logic to determine status if date changes or if we are restoring an item
+    if (updates.expirationDate !== undefined) {
        if (updates.expirationDate) {
            supabaseUpdates.status = this.determineStatus(new Date(updates.expirationDate));
        } else {
@@ -191,5 +189,18 @@ export class FoodService {
     }
 
     await this.refreshItems();
+  }
+
+  async restoreItem(id: string) {
+    // Get current item to find its expiration date
+    const item = this.itemsSignal().find(i => i.id === id);
+    if (!item) return;
+
+    let newStatus: 'fresh' | 'expired' | 'expiring' = 'fresh';
+    if (item.expirationDate) {
+      newStatus = this.determineStatus(new Date(item.expirationDate));
+    }
+
+    await this.updateStatus(id, newStatus);
   }
 }

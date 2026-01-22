@@ -92,4 +92,8 @@ export class InventoryListComponent {
   async markAsConsumed(id: string) {
     await this.foodService.updateStatus(id, 'consumed');
   }
+
+  async restoreItem(id: string) {
+    await this.foodService.restoreItem(id);
+  }
 }
