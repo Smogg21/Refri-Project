@@ -1,37 +1,43 @@
 const fs = require('fs');
 
-// Ruta donde se creará el archivo
+// 1. Obtener variables
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+
+// 2. LOGS DE DEPURACIÓN (Aparecerán en el Build Log de Vercel)
+console.log('--- GENERANDO ENVIRONMENTS ---');
+console.log('Supabase URL existe:', !!supabaseUrl); // Debe decir true
+console.log('Supabase URL empieza con:', supabaseUrl ? supabaseUrl.substring(0, 5) : 'NADA');
+console.log('Supabase Key existe:', !!supabaseKey); // Debe decir true
+
+// 3. Validación estricta: Si no hay variables, detiene el build
+if (!supabaseUrl || !supabaseKey) {
+    console.error('❌ ERROR: Faltan las variables de entorno en Vercel.');
+    process.exit(1); // Esto hará que el build falle intencionalmente
+}
+
 const targetPath = './src/environments/environment.ts';
 const targetPathProd = './src/environments/environment.prod.ts';
 
-// Contenido del archivo. Aquí leemos las variables de Vercel (process.env)
 const envConfigFile = `
 export const environment = {
   production: true,
-  supabaseUrl: '${process.env.SUPABASE_URL}',
-  supabaseKey: '${process.env.SUPABASE_KEY}',
-  openRouterApiKey: '${process.env.OPENROUTER_API_KEY}'
+  supabaseUrl: '${supabaseUrl.trim()}',
+  supabaseKey: '${supabaseKey.trim()}'
 };
 `;
 
-// Crear directorio environments si no existe
 const dir = './src/environments';
 if (!fs.existsSync(dir)){
     fs.mkdirSync(dir, { recursive: true });
 }
 
-// Escribir el archivo environment.ts
-fs.writeFile(targetPath, envConfigFile, function (err) {
-    if (err) {
-        console.log(err);
-    }
-    console.log(`Output generated at ${targetPath}`);
+fs.writeFile(targetPath, envConfigFile, (err) => {
+    if (err) throw err;
+    console.log(`✅ Archivo generado: ${targetPath}`);
 });
 
-// (Opcional) Escribir también el de prod para asegurar
-fs.writeFile(targetPathProd, envConfigFile, function (err) {
-    if (err) {
-        console.log(err);
-    }
-    console.log(`Output generated at ${targetPathProd}`);
+fs.writeFile(targetPathProd, envConfigFile, (err) => {
+    if (err) throw err;
+    console.log(`✅ Archivo generado: ${targetPathProd}`);
 });
