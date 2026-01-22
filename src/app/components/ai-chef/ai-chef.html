@@ -51,8 +51,7 @@
     <div class="card bg-base-100 shadow-xl border-t-4 border-primary">
       <div class="card-body">
         <h2 class="card-title mb-4">Sugerencias del Chef</h2>
-        <div class="prose max-w-none whitespace-pre-wrap">
-          {{ suggestion() }}
+        <div class="prose max-w-none" [innerHTML]="formattedSuggestion()">
         </div>
 
         <div class="card-actions justify-end mt-6">

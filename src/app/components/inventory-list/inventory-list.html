@@ -36,7 +36,7 @@
         @for (item of filteredItems(); track item.id) {
         <tr [class.opacity-50]="item.status === 'consumed' || item.status === 'expired'">
           <td>
-             <div class="badge" [ngClass]="{
+             <div class="badge h-full" [ngClass]="{
                'badge-success': item.status === 'fresh',
                'badge-warning': item.status === 'expiring',
                'badge-neutral': item.status === 'consumed',

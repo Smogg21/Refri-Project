@@ -1,8 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { FoodService } from '../../services/food.service';
 import { AiService } from '../../services/ai.service';
+import { marked } from 'marked';
 
 
 @Component({
@@ -16,10 +18,20 @@ export class AiChefComponent {
   foodService = inject(FoodService);
   aiService = inject(AiService);
 
+  sanitizer = inject(DomSanitizer);
+
   mealType = signal<string>('Almuerzo');
   isLoading = signal<boolean>(false);
   suggestion = signal<string | null>(null);
   error = signal<string | null>(null);
+
+  formattedSuggestion = computed<SafeHtml | null>(() => {
+    const rawSuggestion = this.suggestion();
+    if (!rawSuggestion) return null;
+
+    const htmlSnippet = marked.parse(rawSuggestion) as string;
+    return this.sanitizer.bypassSecurityTrustHtml(htmlSnippet);
+  });
 
   mealOptions = ['Desayuno', 'Almuerzo', 'Cena', 'Snack', 'Postre'];
 
