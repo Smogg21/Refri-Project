@@ -22,6 +22,17 @@
           }
         </div>
       </div>
+      <div class="form-control w-full mt-4">
+        <label class="label">
+          <span class="label-text font-medium">¿Algo más que deba saber?</span>
+        </label>
+        <textarea
+          class="textarea textarea-bordered h-24 w-full"
+          placeholder="Ej: Tengo poco tiempo, quiero algo picante, o no quiero usar el horno..."
+          [ngModel]="userNotes()"
+          (ngModelChange)="userNotes.set($event)">
+        </textarea>
+      </div>
 
       <div class="card-actions justify-end mt-4">
         <button

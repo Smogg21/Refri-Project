@@ -21,6 +21,7 @@ export class AiChefComponent {
   sanitizer = inject(DomSanitizer);
 
   mealType = signal<string>('Almuerzo');
+  userNotes = signal<string>('');
   isLoading = signal<boolean>(false);
   suggestion = signal<string | null>(null);
   error = signal<string | null>(null);
@@ -50,7 +51,7 @@ export class AiChefComponent {
         return;
       }
 
-      const result = await this.aiService.getRecipeSuggestions(inventory, this.mealType());
+      const result = await this.aiService.getRecipeSuggestions(inventory, this.mealType(), this.userNotes());
       this.suggestion.set(result);
 
     } catch (e: any) {

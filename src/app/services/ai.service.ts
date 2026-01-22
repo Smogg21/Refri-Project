@@ -9,7 +9,7 @@ export class AiService {
   private apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
   private model = 'google/gemini-2.5-flash-lite';
 
-  async getRecipeSuggestions(inventory: FoodItem[], mealType: string): Promise<string> {
+  async getRecipeSuggestions(inventory: FoodItem[], mealType: string, additionalDetails?: string): Promise<string> {
     const apiKey = environment.openRouterApiKey;
 
     if (!apiKey || apiKey === 'YOUR_OPENROUTER_KEY_HERE') {
@@ -28,9 +28,12 @@ export class AiService {
       Actúa como un chef experto. Tengo los siguientes ingredientes en mi cocina:
       ${inventoryList}
 
-      Por favor, sugiereme 3 opciones de recetas que pueda preparar para: ${mealType}.
+      Por favor, sugiereme 2 opciones de recetas que pueda preparar para: ${mealType}.
+      ${additionalDetails ? `Ten en cuenta estos detalles adicionales del usuario: ${additionalDetails}` : ''}
       Utiliza los ingredientes que tienes disponibles, pero prioriza utilizar los ingredientes marcados como '[expiring]', ya que están próximos a caducar, aunque no es obligatorio usarlos.
-      Si me falta algún ingrediente común (como sal, aceite, especias), asume que lo tengo, pero menciónalo si es algo específico.
+      Si me falta algún ingrediente común (como sal, aceite, especias), asume que lo tengo, pero menciónalo si es algo específico. No asumas que tengo ingredientes más complejos.
+      Si ves muy complicado generar alguna receta con los pocos ingredientes que tenemos, puedes mencionarlo. No tienes que obligatoriamente entregar 2 recetas si lo ves muy complicado.
+      Por úlitmo, al final de tus sugerencias puedes dar sugerencia de algún insumo que sería buena idea comprar para poder tener más recetas con lo que tenemos actualmente.
 
       El formato debe ser:
       ## [Nombre de la receta]
