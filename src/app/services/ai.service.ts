@@ -33,7 +33,7 @@ export class AiService {
       Utiliza los ingredientes que tienes disponibles, pero prioriza utilizar los ingredientes marcados como '[expiring]', ya que están próximos a caducar, aunque no es obligatorio usarlos.
       Si me falta algún ingrediente común (como sal, aceite, especias), asume que lo tengo, pero menciónalo si es algo específico. No asumas que tengo ingredientes más complejos.
       Si ves muy complicado generar alguna receta con los pocos ingredientes que tenemos, puedes mencionarlo. No tienes que obligatoriamente entregar 2 recetas si lo ves muy complicado.
-      Por úlitmo, al final de tus sugerencias puedes dar sugerencia de algún insumo que sería buena idea comprar para poder tener más recetas con lo que tenemos actualmente.
+      Por último, al final de tus sugerencias puedes dar sugerencia de algún insumo que sería buena idea comprar para poder tener más recetas con lo que tenemos actualmente.
 
       El formato debe ser:
       ## [Nombre de la receta]
