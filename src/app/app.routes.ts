@@ -14,7 +14,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
       { path: 'inventory', component: InventoryListComponent },
-      { path: 'add', component: AddItemComponent }
+      { path: 'add', component: AddItemComponent },
+      { path: 'chef', loadComponent: () => import('./components/ai-chef/ai-chef').then(m => m.AiChefComponent) }
     ]
   }
 ];

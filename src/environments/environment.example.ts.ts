@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
   supabaseUrl: 'YOUR_SUPABASE_URL',
-  supabaseKey: 'YOUR_SUPABASE_ANON_KEY'
+  supabaseKey: 'YOUR_SUPABASE_ANON_KEY',
+  openRouterApiKey: 'YOUR_OPENROUTER_KEY_HERE'
 };

@@ -4,9 +4,11 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angu
 import { FoodService } from '../../services/food.service';
 import { FoodItem } from '../../models/food-item.model';
 
+import { RouterModule } from '@angular/router';
+
 @Component({
   selector: 'app-inventory-list',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DatePipe, RouterModule],
   templateUrl: './inventory-list.html',
   styleUrl: './inventory-list.css'
 })

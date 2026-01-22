@@ -12,6 +12,11 @@
         <option value="">Todas las Ubicaciones</option>
         <option *ngFor="let loc of locations" [value]="loc">{{ loc === 'fridge' ? 'Nevera' : 'Despensa' }}</option>
       </select>
+
+      <a routerLink="/add" class="btn btn-primary">
+         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+         Agregar
+      </a>
     </div>
   </div>
 
@@ -29,14 +34,20 @@
       </thead>
       <tbody>
         @for (item of filteredItems(); track item.id) {
-        <tr [class.opacity-50]="item.status !== 'fresh'">
+        <tr [class.opacity-50]="item.status === 'consumed' || item.status === 'expired'">
           <td>
              <div class="badge" [ngClass]="{
                'badge-success': item.status === 'fresh',
-               'badge-warning': item.status === 'consumed',
+               'badge-warning': item.status === 'expiring',
+               'badge-neutral': item.status === 'consumed',
                'badge-error': item.status === 'expired'
              }">
-               {{ item.status === 'fresh' ? 'Fresco' : (item.status === 'consumed' ? 'Consumido' : 'Vencido') }}
+               @switch (item.status) {
+                 @case ('fresh') { Fresco }
+                 @case ('expiring') { Por vencer }
+                 @case ('consumed') { Consumido }
+                 @case ('expired') { Vencido }
+               }
              </div>
           </td>
           <td>
@@ -56,7 +67,7 @@
             }
           </td>
           <td class="text-right space-x-2">
-             @if (item.status === 'fresh') {
+             @if (item.status === 'fresh' || item.status === 'expiring') {
              <button class="btn btn-xs btn-success btn-outline"
                      (click)="markAsConsumed(item.id)"
                      title="Marcar como Consumido">
@@ -64,7 +75,7 @@
              </button>
              }
 
-             @if (item.status === 'fresh' || item.status === 'expired') {
+             @if (item.status === 'fresh' || item.status === 'expired' || item.status === 'expiring') {
              <button class="btn btn-xs btn-info btn-outline"
                      (click)="startEdit(item)"
                      title="Editar">

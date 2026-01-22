@@ -13,16 +13,8 @@ export class FoodService {
   readonly items = this.itemsSignal.asReadonly();
 
   readonly expiringSoon = computed(() => {
-    const now = new Date();
-    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-    const limitDate = new Date(todayUTC);
-    limitDate.setUTCDate(todayUTC.getUTCDate() + 7);
-
-    return this.itemsSignal().filter(item => {
-      if (!item.expirationDate || item.status !== 'fresh') return false;
-      const itemDate = new Date(item.expirationDate);
-      return itemDate >= todayUTC && itemDate <= limitDate;
-    });
+    // Return items that are status 'expiring'
+    return this.itemsSignal().filter(item => item.status === 'expiring');
   });
 
   readonly stats = computed(() => {
@@ -47,10 +39,19 @@ export class FoodService {
     });
   }
 
-  private checkExpiration(date: Date): boolean {
+  private determineStatus(date: Date): 'fresh' | 'expired' | 'expiring' {
     const now = new Date();
     const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-    return date < todayUTC;
+    const limitDate = new Date(todayUTC);
+    limitDate.setUTCDate(todayUTC.getUTCDate() + 7);
+
+    if (date < todayUTC) {
+      return 'expired';
+    } else if (date <= limitDate) {
+      return 'expiring';
+    } else {
+      return 'fresh';
+    }
   }
 
   async refreshItems() {
@@ -69,10 +70,12 @@ export class FoodService {
         const expirationDate = item.expiration_date ? new Date(item.expiration_date) : null;
         let status = item.status;
 
-        // Auto-expire items if needed
-        if (status === 'fresh' && expirationDate && this.checkExpiration(expirationDate)) {
-          status = 'expired';
-          // We could update the status in the DB here too, but for now we just show it
+        // Auto-update items status if needed (e.g. fresh -> expiring, or fresh -> expired)
+        if ((status === 'fresh' || status === 'expiring') && expirationDate) {
+          const newStatus = this.determineStatus(expirationDate);
+          if (newStatus !== status) {
+             status = newStatus;
+          }
         }
 
         return {
@@ -94,8 +97,11 @@ export class FoodService {
   authService = inject(AuthService);
 
   async addItem(item: Omit<FoodItem, 'id' | 'addedDate' | 'status'>) {
-    const isExpired = item.expirationDate && this.checkExpiration(item.expirationDate);
-    const status = isExpired ? 'expired' : 'fresh';
+    let status: 'fresh' | 'expired' | 'expiring' = 'fresh';
+
+    if (item.expirationDate) {
+      status = this.determineStatus(item.expirationDate);
+    }
     const username = this.authService.username();
 
     const { data, error } = await supabase
@@ -122,7 +128,7 @@ export class FoodService {
     }
   }
 
-  async updateStatus(id: string, status: 'consumed' | 'expired') {
+  async updateStatus(id: string, status: 'consumed' | 'expired' | 'fresh' | 'expiring') {
     const { error } = await supabase
       .from('food_items')
       .update({ status })
@@ -147,11 +153,18 @@ export class FoodService {
     if (updates.status) supabaseUpdates.status = updates.status;
     if (updates.quantity !== undefined) supabaseUpdates.quantity = updates.quantity;
 
-    // If expiration date changed, re-check status if not explicitly provided
-    if (updates.expirationDate !== undefined && !updates.status) {
-       const isExpired = updates.expirationDate && this.checkExpiration(new Date(updates.expirationDate));
-       supabaseUpdates.status = isExpired ? 'expired' : 'fresh';
+    // Logic to determine status if date changes
+    if (updates.expirationDate !== undefined && (!updates.status || updates.status === 'fresh' || updates.status === 'expiring' || updates.status === 'expired')) {
+       // Only recalculate if we have a date. If null, default to fresh or keep existing?
+       // If clearing date, assume fresh or user intent.
+       if (updates.expirationDate) {
+           supabaseUpdates.status = this.determineStatus(new Date(updates.expirationDate));
+       } else {
+           supabaseUpdates.status = 'fresh';
+       }
     }
+
+
 
     const { error } = await supabase
       .from('food_items')
