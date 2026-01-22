@@ -27,8 +27,13 @@ export class AuthService {
   }
 
   async initSession() {
+    await this.checkSession();
+  }
+
+  async checkSession(): Promise<Session | null> {
     const { data: { session } } = await supabase.auth.getSession();
     this.sessionSignal.set(session);
+    return session;
   }
 
   async signIn(email: string) {

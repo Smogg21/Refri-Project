@@ -2,22 +2,21 @@ import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const authGuard: CanActivateFn = async (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // We need to wait for the session initialization to complete probably,
-  // but since we are using signals and the constructor triggers it,
-  // it might be async.
-  // For better DX, we might want a loading state or similar,
-  // but for now checking isLoggedIn() which is a computed signal.
-  // Ideally AuthService should expose an initialized signal or promise.
-  // HOWEVER, Supabase auth state change fires properly.
-
+  // Check if we are already logged in in the state
   if (authService.isLoggedIn()) {
     return true;
   }
 
-  // If not logged in redirect to login
+  // If not, try to fetch the session from Supabase (localStorage)
+  const session = await authService.checkSession();
+  if (session) {
+    return true;
+  }
+
+  // If no session found even after checking, redirect to login
   return router.parseUrl('/login');
 };

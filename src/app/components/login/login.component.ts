@@ -108,7 +108,13 @@ export class LoginComponent {
       }
 
       if (result.error) {
-        this.errorMessage.set(result.error.message);
+        console.error('Supabase Auth Error:', result.error); // Debugging
+        const msg = result.error.message.toLowerCase();
+        if (msg.includes('already registered') || msg.includes('duplicate')) {
+          this.errorMessage.set('Este correo ya está registrado. Por favor inicia sesión.');
+        } else {
+          this.errorMessage.set(result.error.message);
+        }
       } else {
         // If login successful, router validates session and redirects usually,
         // but we can force it here just in case or if logic relies on listener.
