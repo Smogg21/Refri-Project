@@ -49,7 +49,7 @@ import { AuthService } from '../../services/auth.service';
 
             <div class="form-control mt-6">
               <button
-                class="btn btn-primary"
+                class="btn btn-primary w-full"
                 [class.loading]="isLoading()"
                 (click)="handleSubmit()"
                 [disabled]="isLoading()">
