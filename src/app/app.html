@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-base-200">
-  <div class="navbar bg-base-100 shadow-lg px-4 mb-4">
+  <div class="navbar bg-base-100 shadow-lg px-4 mb-4" *ngIf="authService.isLoggedIn()">
     <div class="flex-1">
       <a routerLink="/" class="btn btn-ghost normal-case text-xl text-primary font-bold">
          Refri-Project
@@ -9,6 +9,7 @@
       <ul class="menu menu-horizontal px-1">
         <li><a routerLink="/dashboard" routerLinkActive="active">Panel</a></li>
         <li><a routerLink="/inventory" routerLinkActive="active">Inventario</a></li>
+        <li><button (click)="authService.signOut()">Salir</button></li>
       </ul>
     </div>
   </div>

@@ -7,4 +7,5 @@ export interface FoodItem {
   status: 'fresh' | 'consumed' | 'expired';
   quantity: number;
   addedDate: Date;
+  createdBy?: string; // Username of the person who added it
 }

@@ -1,6 +1,7 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { FoodItem } from '../models/food-item.model';
 import { supabase } from './supabase';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -35,7 +36,15 @@ export class FoodService {
   });
 
   constructor() {
-    this.refreshItems();
+    // We can listen to auth changes directly from Supabase or inject AuthService.
+    // Since this service is a singleton root service, it stays alive.
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        this.refreshItems();
+      } else {
+        this.itemsSignal.set([]); // Clear items if logged out
+      }
+    });
   }
 
   private checkExpiration(date: Date): boolean {
@@ -74,16 +83,20 @@ export class FoodService {
           location: item.location,
           status,
           quantity: item.quantity,
-          addedDate: new Date(item.added_date)
+          addedDate: new Date(item.added_date),
+          createdBy: item.created_by
         };
       });
       this.itemsSignal.set(items);
     }
   }
 
+  authService = inject(AuthService);
+
   async addItem(item: Omit<FoodItem, 'id' | 'addedDate' | 'status'>) {
     const isExpired = item.expirationDate && this.checkExpiration(item.expirationDate);
     const status = isExpired ? 'expired' : 'fresh';
+    const username = this.authService.username();
 
     const { data, error } = await supabase
       .from('food_items')
@@ -93,7 +106,8 @@ export class FoodService {
         expiration_date: item.expirationDate?.toISOString().split('T')[0],
         location: item.location,
         status: status,
-        quantity: item.quantity
+        quantity: item.quantity,
+        created_by: username
       })
       .select()
       .single();
