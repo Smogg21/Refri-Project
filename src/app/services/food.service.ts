@@ -100,6 +100,23 @@ export class FoodService {
     );
   }
 
+  updateItem(id: string, updates: Partial<FoodItem>) {
+    this.itemsSignal.update(items =>
+      items.map(item => {
+        if (item.id === id) {
+          const updatedItem = { ...item, ...updates };
+          // Re-check status if expiration date changed
+          if (updates.expirationDate || updates.status === undefined) {
+             const isExpired = updatedItem.expirationDate && this.checkExpiration(new Date(updatedItem.expirationDate));
+             updatedItem.status = isExpired ? 'expired' : (updatedItem.status === 'expired' ? 'fresh' : updatedItem.status);
+          }
+          return updatedItem;
+        }
+        return item;
+      })
+    );
+  }
+
   deleteItem(id: string) {
     this.itemsSignal.update(items => items.filter(item => item.id !== id));
   }
