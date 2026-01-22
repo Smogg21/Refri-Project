@@ -47,7 +47,7 @@
           <td>{{ item.category }}</td>
           <td>
             @if (item.expirationDate) {
-               {{ item.expirationDate | date:'dd/MM/yyyy' }}
+               {{ item.expirationDate | date:'dd/MM/yyyy':'UTC' }}
             } @else {
               <span class="text-base-content/30">--</span>
             }

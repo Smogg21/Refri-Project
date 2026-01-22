@@ -14,15 +14,15 @@ export class FoodService {
 
   readonly expiringSoon = computed(() => {
     const now = new Date();
-    const threeDaysFromNow = new Date();
-    threeDaysFromNow.setDate(now.getDate() + 7);
+    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const limitDate = new Date(todayUTC);
+    limitDate.setUTCDate(todayUTC.getUTCDate() + 7);
 
-    return this.itemsSignal().filter(item =>
-      item.expirationDate &&
-      new Date(item.expirationDate) <= threeDaysFromNow &&
-      new Date(item.expirationDate) >= now &&
-      item.status === 'fresh'
-    );
+    return this.itemsSignal().filter(item => {
+      if (!item.expirationDate || item.status !== 'fresh') return false;
+      const itemDate = new Date(item.expirationDate);
+      return itemDate >= todayUTC && itemDate <= limitDate;
+    });
   });
 
   readonly stats = computed(() => {
