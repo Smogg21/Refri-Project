@@ -1,14 +1,13 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { FoodItem } from '../models/food-item.model';
+import { supabase } from './supabase';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FoodService {
-  private readonly STORAGE_KEY = 'refri_items';
-
   // Using signals for reactive state
-  private itemsSignal = signal<FoodItem[]>(this.loadItems());
+  private itemsSignal = signal<FoodItem[]>([]);
 
   readonly items = this.itemsSignal.asReadonly();
 
@@ -36,88 +35,134 @@ export class FoodService {
   });
 
   constructor() {
-    effect(() => {
-      this.saveItems(this.itemsSignal());
-    });
+    this.refreshItems();
   }
 
   private checkExpiration(date: Date): boolean {
     const now = new Date();
-    // Create UTC midnight date for comparison to match input format logic
     const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
     return date < todayUTC;
   }
 
-  private loadItems(): FoodItem[] {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (!stored) return [];
+  async refreshItems() {
+    const { data, error } = await supabase
+      .from('food_items')
+      .select('*')
+      .order('added_date', { ascending: false });
 
-    try {
-      const parsed = JSON.parse(stored);
-      // Restore date objects and check expiration
-      return parsed.map((item: any) => {
-        const expirationDate = item.expirationDate ? new Date(item.expirationDate) : null;
+    if (error) {
+      console.error('Error fetching items from Supabase:', error);
+      return;
+    }
+
+    if (data) {
+      const items: FoodItem[] = data.map((item: any) => {
+        const expirationDate = item.expiration_date ? new Date(item.expiration_date) : null;
         let status = item.status;
 
         // Auto-expire items if needed
         if (status === 'fresh' && expirationDate && this.checkExpiration(expirationDate)) {
           status = 'expired';
+          // We could update the status in the DB here too, but for now we just show it
         }
 
         return {
-          ...item,
+          id: item.id,
+          name: item.name,
+          category: item.category,
           expirationDate,
-          addedDate: new Date(item.addedDate),
-          status
+          location: item.location,
+          status,
+          quantity: item.quantity,
+          addedDate: new Date(item.added_date)
         };
       });
-    } catch (e) {
-      console.error('Failed to parse items', e);
-      return [];
+      this.itemsSignal.set(items);
     }
   }
 
-  private saveItems(items: FoodItem[]) {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
-  }
-
-  addItem(item: Omit<FoodItem, 'id' | 'addedDate' | 'status'>) {
+  async addItem(item: Omit<FoodItem, 'id' | 'addedDate' | 'status'>) {
     const isExpired = item.expirationDate && this.checkExpiration(item.expirationDate);
+    const status = isExpired ? 'expired' : 'fresh';
 
-    const newItem: FoodItem = {
-      ...item,
-      id: crypto.randomUUID(),
-      addedDate: new Date(),
-      status: isExpired ? 'expired' : 'fresh'
-    };
-
-    this.itemsSignal.update(items => [...items, newItem]);
-  }
-
-  updateStatus(id: string, status: 'consumed' | 'expired') {
-    this.itemsSignal.update(items =>
-      items.map(item => item.id === id ? { ...item, status } : item)
-    );
-  }
-
-  updateItem(id: string, updates: Partial<FoodItem>) {
-    this.itemsSignal.update(items =>
-      items.map(item => {
-        if (item.id === id) {
-          const updatedItem = { ...item, ...updates };
-          // Re-check status if expiration date changed
-          if (updates.expirationDate || updates.status === undefined) {
-             const isExpired = updatedItem.expirationDate && this.checkExpiration(new Date(updatedItem.expirationDate));
-             updatedItem.status = isExpired ? 'expired' : (updatedItem.status === 'expired' ? 'fresh' : updatedItem.status);
-          }
-          return updatedItem;
-        }
-        return item;
+    const { data, error } = await supabase
+      .from('food_items')
+      .insert({
+        name: item.name,
+        category: item.category,
+        expiration_date: item.expirationDate?.toISOString().split('T')[0],
+        location: item.location,
+        status: status,
+        quantity: item.quantity
       })
-    );
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding item to Supabase:', error);
+      return;
+    }
+
+    if (data) {
+      await this.refreshItems();
+    }
   }
 
-  deleteItem(id: string) {
-    this.itemsSignal.update(items => items.filter(item => item.id !== id));
+  async updateStatus(id: string, status: 'consumed' | 'expired') {
+    const { error } = await supabase
+      .from('food_items')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating status in Supabase:', error);
+      return;
+    }
+
+    await this.refreshItems();
+  }
+
+  async updateItem(id: string, updates: Partial<FoodItem>) {
+    const supabaseUpdates: any = {};
+    if (updates.name) supabaseUpdates.name = updates.name;
+    if (updates.category) supabaseUpdates.category = updates.category;
+    if (updates.expirationDate !== undefined) {
+      supabaseUpdates.expiration_date = updates.expirationDate?.toISOString().split('T')[0] || null;
+    }
+    if (updates.location) supabaseUpdates.location = updates.location;
+    if (updates.status) supabaseUpdates.status = updates.status;
+    if (updates.quantity !== undefined) supabaseUpdates.quantity = updates.quantity;
+
+    // If expiration date changed, re-check status if not explicitly provided
+    if (updates.expirationDate !== undefined && !updates.status) {
+       const isExpired = updates.expirationDate && this.checkExpiration(new Date(updates.expirationDate));
+       supabaseUpdates.status = isExpired ? 'expired' : 'fresh';
+    }
+
+    const { error } = await supabase
+      .from('food_items')
+      .update(supabaseUpdates)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating item in Supabase:', error);
+      return;
+    }
+
+    await this.refreshItems();
+  }
+
+  async deleteItem(id: string) {
+    const { error } = await supabase
+      .from('food_items')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting item from Supabase:', error);
+      return;
+    }
+
+    await this.refreshItems();
   }
 }

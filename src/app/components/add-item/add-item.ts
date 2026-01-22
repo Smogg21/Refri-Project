@@ -26,10 +26,10 @@ export class AddItemComponent {
     quantity: [1, [Validators.required, Validators.min(1)]]
   });
 
-  onSubmit() {
+  async onSubmit() {
     if (this.form.valid) {
       const val = this.form.value;
-      this.foodService.addItem({
+      await this.foodService.addItem({
         name: val.name!,
         category: val.category!,
         location: val.location as 'fridge' | 'pantry',

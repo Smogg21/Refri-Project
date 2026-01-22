@@ -66,11 +66,11 @@ export class InventoryListComponent {
     this.editForm.reset();
   }
 
-  saveEdit() {
+  async saveEdit() {
     const item = this.editingItem();
     if (item && this.editForm.valid) {
       const val = this.editForm.value;
-      this.foodService.updateItem(item.id, {
+      await this.foodService.updateItem(item.id, {
         name: val.name!,
         category: val.category!,
         location: val.location as 'fridge' | 'pantry',
@@ -81,13 +81,13 @@ export class InventoryListComponent {
     }
   }
 
-  deleteItem(id: string) {
+  async deleteItem(id: string) {
     if(confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-        this.foodService.deleteItem(id);
+        await this.foodService.deleteItem(id);
     }
   }
 
-  markAsConsumed(id: string) {
-    this.foodService.updateStatus(id, 'consumed');
+  async markAsConsumed(id: string) {
+    await this.foodService.updateStatus(id, 'consumed');
   }
 }
