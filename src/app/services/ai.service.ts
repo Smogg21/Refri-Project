@@ -30,8 +30,8 @@ export class AiService {
 
       Por favor, sugiereme 2 opciones de recetas que pueda preparar para: ${mealType}.
       ${additionalDetails ? `Ten en cuenta estos detalles adicionales del usuario: ${additionalDetails}` : ''}
-      Puedes utilizar cualquiera de los ingredientes disponibles, pero prioriza utilizar los ingredientes marcados como '[expiring]', ya que están próximos a caducar, aunque no es obligatorio usarlos.
-      No es necesario que utilices todos los ingredientes disponibles.
+      Puedes utilizar cualquiera de los ingredientes disponibles, y puedes intentar priorizar los ingredientes marcados como '[expiring]', ya que están próximos a caducar, aunque no es obligatorio usarlos.
+      No es necesario que utilices todos los ingredientes disponibles. No quiero recetas que utilicen ingredientes de forma innecesaria. No hay nada de malo en la simplicidad
       Si me falta algún ingrediente común (como sal, aceite, especias), asume que lo tengo, pero menciónalo si es algo específico. No asumas que tengo ingredientes más complejos.
       Si ves muy complicado generar alguna receta con los pocos ingredientes que tenemos, puedes mencionarlo. No tienes que obligatoriamente entregar 2 recetas si lo ves muy complicado.
       Por último, al final de tus sugerencias puedes dar sugerencia de algún insumo que sería buena idea comprar para poder tener más recetas con lo que tenemos actualmente.
